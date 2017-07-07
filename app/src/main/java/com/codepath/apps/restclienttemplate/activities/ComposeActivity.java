@@ -7,17 +7,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import com.codepath.apps.restclienttemplate.R;
+import com.codepath.apps.restclienttemplate.helpers.CustomResponseHandler;
 import com.codepath.apps.restclienttemplate.helpers.TwitterApp;
 import com.codepath.apps.restclienttemplate.models.Tweet;
-import com.loopj.android.http.JsonHttpResponseHandler;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.parceler.Parcels;
@@ -73,7 +71,7 @@ public class ComposeActivity extends AppCompatActivity {
     public void onSubmit(View view){
         String tweetString=etTweet.getText().toString();
 
-        TwitterApp.getRestClient().sendTweet(tweetString, uid, new JsonHttpResponseHandler(){
+        TwitterApp.getRestClient().sendTweet(tweetString, uid, new CustomResponseHandler("ComposeActivity"){
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
@@ -84,25 +82,6 @@ public class ComposeActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-            }
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                Log.d("ComposeActivity",response.toString());
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.d("ComposeActivity",errorResponse.toString());
-                throwable.printStackTrace();
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                Log.d("ComposeActivity",errorResponse.toString());
-                throwable.printStackTrace();
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                Log.d("ComposeActivity",responseString);
-                throwable.printStackTrace();
             }
         });
     }
