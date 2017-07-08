@@ -2,6 +2,7 @@ package com.codepath.apps.restclienttemplate.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -17,6 +18,8 @@ import com.codepath.apps.restclienttemplate.models.Tweet;
 
 import org.json.JSONObject;
 import org.parceler.Parcels;
+
+import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
@@ -35,6 +38,12 @@ public class DetailsActivity extends AppCompatActivity {
     Tweet tweet;
     TwitterClient client;
 
+    //USED TO SAVE ANY REPLY TWEETS COMPOSED FROM THE DETAIL VIEW
+    ArrayList<Parcelable> tweetArrayList;
+    //USED TO RETURN WHICH POSITION THE TWEET IS IN THE RECYCLER VIEW
+    int position;
+    Tweet retweetedTweet;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +61,8 @@ public class DetailsActivity extends AppCompatActivity {
 
         Intent intent=getIntent();
         tweet = Parcels.unwrap(intent.getParcelableExtra("tweet"));
+        position = intent.getIntExtra("position",0);
+        tweetArrayList=new ArrayList<>();
 
         Glide.with(this)
                 .load(tweet.user.profileImageUrl)
@@ -62,10 +73,10 @@ public class DetailsActivity extends AppCompatActivity {
         tvBody.setText(tweet.body);
         tvTimeStamp.setText(tweet.createdAt);
         if (tweet.retweeted){
-            ivRetweet.setColorFilter(R.color.medium_green);
+            ivRetweet.setImageDrawable(getResources().getDrawable(R.drawable.ic_vector_retweet));
         }
         if (tweet.favorited){
-            ivFavorite.setColorFilter(R.color.medium_red);
+            ivFavorite.setImageDrawable(getResources().getDrawable(R.drawable.ic_vector_heart));
         }
 
         client = TwitterApp.getRestClient();
@@ -73,7 +84,10 @@ public class DetailsActivity extends AppCompatActivity {
         ivReply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent i = new Intent(DetailsActivity.this,ComposeActivity.class);
+                i.putExtra("reply_to","@"+tweet.user.screenName+" ");
+                i.putExtra("uid",tweet.uid);
+                startActivityForResult(i,20);
             }
         });
 
@@ -86,6 +100,8 @@ public class DetailsActivity extends AppCompatActivity {
                         public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                             ivRetweet.setImageDrawable(getResources().getDrawable(R.drawable.ic_vector_retweet_stroke));
                             tweet.retweeted = false;
+//                            tweetArrayList.remove(Parcels.wrap(retweetedTweet));
+//                            retweetedTweet=null;
                         }
                     });
                 } else {
@@ -94,6 +110,12 @@ public class DetailsActivity extends AppCompatActivity {
                         public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                             ivRetweet.setImageDrawable(getResources().getDrawable(R.drawable.ic_vector_retweet));
                             tweet.retweeted = true;
+//                            try {
+//                                retweetedTweet = Tweet.fromJSON(response);
+//                                tweetArrayList.add(Parcels.wrap(retweetedTweet));
+//                            }catch (JSONException e){
+//                                e.printStackTrace();
+//                            }
                         }
                     });
                 }
@@ -128,21 +150,22 @@ public class DetailsActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // REQUEST_CODE is defined above
-        if (resultCode == RESULT_OK && requestCode == 21) {
+        if (resultCode == RESULT_OK && requestCode == 20) {
             // Extract name value from result extras
             Tweet tweet = Parcels.unwrap(data.getParcelableExtra("tweet"));
-//            TimelineActivity.tweets.add(0,tweet);
-//            tweetAdapter.notifyItemInserted(0);
-//            rvTweets.scrollToPosition(0);
+            tweetArrayList.add(Parcels.wrap(tweet));
         }
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            Intent i = new Intent(this,TimelineActivity.class);
-            startActivity(i);
-
+            Intent i = new Intent();
+            i.putExtra("detail_tweet",Parcels.wrap(tweet));
+            i.putExtra("tweet_list",tweetArrayList);
+            i.putExtra("position",position);
+            setResult(RESULT_OK,i);
+            finish();
         }
         return super.onKeyDown(keyCode, event);
     }

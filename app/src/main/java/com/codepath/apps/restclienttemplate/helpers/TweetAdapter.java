@@ -1,6 +1,7 @@
 package com.codepath.apps.restclienttemplate.helpers;
 
 import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,6 @@ import com.bumptech.glide.Glide;
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.activities.ComposeActivity;
 import com.codepath.apps.restclienttemplate.activities.DetailsActivity;
-import com.codepath.apps.restclienttemplate.activities.TimelineActivity;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 
 import org.json.JSONArray;
@@ -29,8 +29,10 @@ import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
 public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
 
+
+
     private List<Tweet> tweets;
-    TimelineActivity context;
+    AppCompatActivity context;
 
     //pass in the Tweets array into constructor
     public TweetAdapter(List<Tweet> tweets){
@@ -38,10 +40,9 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
     }
 
     //for each row, inflate layout and cache references into ViewHolder
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        context=(TimelineActivity) parent.getContext();
+        context=(AppCompatActivity) parent.getContext();
 
         LayoutInflater inflater = LayoutInflater.from(context);
         View tweetView = inflater.inflate(R.layout.item_tweet,parent,false);
@@ -110,7 +111,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
                     Intent i = new Intent(context, DetailsActivity.class);
                     i.putExtra("position",pos);
                     i.putExtra("tweet", Parcels.wrap(tweet));
-                    context.startActivity(i);
+                    context.startActivityForResult(i,21);
                 }
             });
         }

@@ -30,9 +30,9 @@ public abstract class TweetsListFragment extends Fragment {
         void hideProgressIndicators();
     }
 
-    TweetAdapter tweetAdapter;
-    ArrayList<Tweet> tweets;
-    RecyclerView rvTweets;
+    public TweetAdapter tweetAdapter;
+    public ArrayList<Tweet> tweets;
+    public RecyclerView rvTweets;
 
     TwitterClient client;
 
@@ -40,6 +40,12 @@ public abstract class TweetsListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         client= TwitterApp.getRestClient();
+        //populateTimeline(0);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         populateTimeline(0);
     }
 
@@ -66,6 +72,17 @@ public abstract class TweetsListFragment extends Fragment {
         tweetAdapter.clear();
         // ...the data has come back, add new items to your adapter...
         tweetAdapter.addAll(response);
+    }
+
+    public void addTweetToList(Tweet tweet){
+        tweets.add(0,tweet);
+        tweetAdapter.notifyItemInserted(0);
+        rvTweets.scrollToPosition(0);
+    }
+
+    public void replaceTweetInList(Tweet tweet, int position){
+        tweets.set(position,tweet);
+        tweetAdapter.notifyItemChanged(position);
     }
 
     //requires that all subclasses of TweetListFragment implement a method to populate the timeline
