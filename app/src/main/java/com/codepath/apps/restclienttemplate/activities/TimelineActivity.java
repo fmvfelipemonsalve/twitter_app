@@ -91,6 +91,18 @@ public class TimelineActivity extends AppCompatActivity implements TweetsListFra
         startActivityForResult(i,20);
     }
 
+    //launches profile view from toolbar
+    public void onProfileView(MenuItem item) {
+        Intent i = new Intent(this,ProfileActivity.class);
+        startActivityForResult(i,22);
+    }
+
+    //gets current fragment instance selected on the tab layout
+    private TweetsListFragment getCurrentFragment(){
+        int pos=tabLayout.getSelectedTabPosition();
+        return ((TweetsListFragment)adapter.getFragmentInstance(pos));
+    }
+
     //code launched when compose activity is finished
     @Override
     //REQUEST CODES:
@@ -120,13 +132,4 @@ public class TimelineActivity extends AppCompatActivity implements TweetsListFra
         }
     }
 
-    private TweetsListFragment getCurrentFragment(){
-        int pos=tabLayout.getSelectedTabPosition();
-        return ((TweetsListFragment)adapter.getFragmentInstance(pos));
-    }
-
-    public void onProfileView(MenuItem item) {
-        Intent i = new Intent(this,ProfileActivity.class);
-        startActivityForResult(i,22);
-    }
 }

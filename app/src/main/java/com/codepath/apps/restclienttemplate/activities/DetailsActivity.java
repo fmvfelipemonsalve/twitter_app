@@ -148,6 +148,10 @@ public class DetailsActivity extends AppCompatActivity {
     }
 
     @Override
+    //REQUEST CODES:
+    // 20-new tweet (from compose)
+    // 21-from detail activity: contains both a possible tweet reply and the updated tweet object
+    // 22-from profile activity: doesn't include params... only refreshes the recycler view
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // REQUEST_CODE is defined above
         if (resultCode == RESULT_OK && requestCode == 20) {

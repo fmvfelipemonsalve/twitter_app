@@ -54,47 +54,60 @@ public class ProfileActivity extends AppCompatActivity {
         //commit
         ft.commit();
 
-        client.getUserInfo(new CustomResponseHandler("ProfileActivity"){
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                try {
-                    //deserialize user object
-                    User user = User.fromJson(response);
-                    //set title of Toolbar based on user info
-                    getSupportActionBar().setTitle(String.format("@%s",user.screenName));
-                    //populate user headline
-                    populateUserHeadline(user);
-                }catch (JSONException e) {
-                    e.printStackTrace();
+        if (screenName == null) {
+            client.getUserInfo(new CustomResponseHandler("ProfileActivity") {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    populateUserHeadline(response);
                 }
-            }
-        });
+            });
+        } else {
+            client.getOtherUserInfo(screenName, new CustomResponseHandler("ProfileActivity") {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    populateUserHeadline(response);
+                }
+            });
+        }
     }
 
-    private void populateUserHeadline(User user) {
-        TextView tvName = (TextView) findViewById(R.id.tvName);
-        TextView tvTagline = (TextView) findViewById(R.id.tvTagline);
-        TextView tvFollowers = (TextView) findViewById(R.id.tvFollowers);
-        TextView tvFollowing = (TextView) findViewById(R.id.tvFollowing);
-        ImageView ivProfileImage = (ImageView) findViewById(R.id.ivProfileImage);
+    private void populateUserHeadline (JSONObject response) {
+        try {
+            User user = User.fromJson(response);
 
-        tvName.setText(user.name);
-        tvTagline.setText(user.tagline);
-        tvFollowers.setText(String.format("%s Followers",user.followers));
-        tvFollowing.setText(String.format("%s Following",user.following));
-        Glide.with(this).load(user.profileImageUrl).into(ivProfileImage);
+            getSupportActionBar().setTitle(String.format("@%s",user.screenName));
 
+            TextView tvName = (TextView) findViewById(R.id.tvName);
+            TextView tvTagline = (TextView) findViewById(R.id.tvTagline);
+            TextView tvFollowers = (TextView) findViewById(R.id.tvFollowers);
+            TextView tvFollowing = (TextView) findViewById(R.id.tvFollowing);
+            ImageView ivProfileImage = (ImageView) findViewById(R.id.ivProfileImage);
+
+            tvName.setText(user.name);
+            tvTagline.setText(user.tagline);
+            tvFollowers.setText(String.format("%s Followers",user.followers));
+            tvFollowing.setText(String.format("%s Following",user.following));
+            Glide.with(this).load(user.profileImageUrl).into(ivProfileImage);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
+    //REQUEST CODES:
+    // 20-new tweet (from compose)
+    // 21-from detail activity: contains both a possible tweet reply and the updated tweet object
+    // 22-from profile activity: doesn't include params... only refreshes the recycler view
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // REQUEST_CODE is defined above
         if (resultCode == RESULT_OK && requestCode == 20) {
             // Extract name value from result extras
             Tweet tweet = Parcels.unwrap(data.getParcelableExtra("tweet"));
             userTimelineFragment.addTweetToList(tweet);
-        } else if (resultCode == RESULT_OK && requestCode == 21) {
-            Tweet tweet = Parcels.unwrap(data.getParcelableExtra("tweet"));
+        }
+        else if (resultCode == RESULT_OK && requestCode == 21) {
+            Tweet tweet = Parcels.unwrap(data.getParcelableExtra("detail_tweet"));
             int position = data.getIntExtra("position",0);
             userTimelineFragment.replaceTweetInList(tweet,position);
 
@@ -102,6 +115,9 @@ public class ProfileActivity extends AppCompatActivity {
             for (int i = 0; i < tweetArrayList.size(); i++){
                 userTimelineFragment.addTweetToList((Tweet) Parcels.unwrap(tweetArrayList.get(i)));
             }
+        }
+        else if (resultCode == RESULT_OK && requestCode == 22) {
+            userTimelineFragment.populateTimeline(0);
         }
     }
 

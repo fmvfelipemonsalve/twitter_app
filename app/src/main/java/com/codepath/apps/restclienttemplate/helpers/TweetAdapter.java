@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide;
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.activities.ComposeActivity;
 import com.codepath.apps.restclienttemplate.activities.DetailsActivity;
+import com.codepath.apps.restclienttemplate.activities.ProfileActivity;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 
 import org.json.JSONArray;
@@ -25,6 +26,7 @@ import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
 /**
  * Created by fmonsalve on 6/26/17.
+ *
  */
 
 public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
@@ -32,7 +34,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
 
 
     private List<Tweet> tweets;
-    AppCompatActivity context;
+    private AppCompatActivity context;
 
     //pass in the Tweets array into constructor
     public TweetAdapter(List<Tweet> tweets){
@@ -46,15 +48,14 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
 
         LayoutInflater inflater = LayoutInflater.from(context);
         View tweetView = inflater.inflate(R.layout.item_tweet,parent,false);
-        ViewHolder viewHolder = new ViewHolder(tweetView);
-        return viewHolder;
+        return new ViewHolder(tweetView);
     }
 
     //bind the values based on the position of the element
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         //get the data according to position
-        Tweet tweet=tweets.get(position);
+        final Tweet tweet=tweets.get(position);
         //populate the views according to this data
         holder.tvUsername.setText(tweet.user.name);
         holder.tvBody.setText("@"+tweet.user.screenName+"\n"+tweet.body);
@@ -74,6 +75,15 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
                 i.putExtra("reply_to","@"+username+" ");
                 i.putExtra("uid",uid);
                 context.startActivityForResult(i,20);
+            }
+        });
+
+        holder.ivProfileImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(context,ProfileActivity.class);
+                i.putExtra("screen_name",tweet.user.screenName);
+                context.startActivityForResult(i,22);
             }
         });
 
@@ -114,6 +124,8 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder>{
                     context.startActivityForResult(i,21);
                 }
             });
+
+
         }
     }
     public void clear() {
